@@ -12,6 +12,7 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+from flask_migrate import Migrate, MigrateCommand
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -19,10 +20,12 @@ from forms import *
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 db = SQLAlchemy(app)
 
-# TODO: connect to a local postgresql database
+migrate = Migrate(app, db)
 
+# TODO: connect to a local postgresql database (Done)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
@@ -38,8 +41,11 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    website = db.Column(db.String(500))
+    seeking_talent = db.Column(db.Boolean)
+    seeking_description =db.Column(db.String)
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # TODO: implement any missing fields, as a database migration using Flask-Migrate (Done)
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -52,10 +58,24 @@ class Artist(db.Model):
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    website_link = db.Column(db.String(500))
+    seeking_venue = db.Column(db.Boolean)
+    seeking_description = db.Column(db.String)
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+class Show(db.Model):
+    __tablename__='Show'
 
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+    id = db.Column(db.Integer, primary_key=True)
+    start_time = db.Column(db.DateTime)
+    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
+    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
+    artist = db.relationship('Artist', backref=db.backref('shows',cascade="all,delete"))
+    venue = db.relationship('Venue', backref=db.backref('shows', cascade="all,delete"))
+
+
+    # TODO: implement any missing fields, as a database migration using Flask-Migrate (Done)
+
+# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration. (Done)
 
 #----------------------------------------------------------------------------#
 # Filters.
