@@ -128,6 +128,7 @@ def venues():
       new_dict["city"]=item.city
       new_dict["state"]=item.state
       new_list.append(new_dict)
+      new_dict = {}
 
   for l in new_list:
       l["venues"]=[
