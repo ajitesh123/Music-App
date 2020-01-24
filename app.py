@@ -59,6 +59,8 @@ class Venue(db.Model):
             'seeking_description': self.seeking_description,
             'image_link': self.image_link
         })
+    def get_by_id(id):
+        return Venue.query.filter_by(id=id).first()
 
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate (Done)
@@ -93,6 +95,9 @@ class Artist(db.Model):
             'seeking_description': self.seeking_description
         })
 
+    def get_by_id(id):
+        return Artist.query.filter_by(id=id).first()
+
 class Show(db.Model):
     __tablename__='Show'
 
@@ -102,6 +107,17 @@ class Show(db.Model):
     venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
     artist = db.relationship('Artist', backref=db.backref('shows',cascade="all,delete"))
     venue = db.relationship('Venue', backref=db.backref('shows', cascade="all,delete"))
+
+    def format(self):
+        return ({
+            'id': self.id,
+            'start_time': self.start_time,
+            'artist_id': self.artist_id,
+            'venue_id': self.venue_id,
+        })
+
+    def get_by_id(id):
+        return Show.query.filter_by(id=id).first()
 
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate (Done)
@@ -544,6 +560,21 @@ def create_artist_submission():
 
 @app.route('/shows')
 def shows():
+
+  result = Show.query.all()
+  new_data = []
+  new_dict = {}
+
+  for item in result:
+      new_dict["venue_id"] = item.venue_id
+      new_dict["venue_name"] = Venue.get_by_id(item.venue_id).name
+      new_dict["artist_id"] = item.artist_id
+      new_dict["artist_name"] = Artist.get_by_id(item.artist_id).name
+      new_dict["artist_image_link"] = Artist.get_by_id(item.artist_id).image_link
+      new_dict["start_time"] = item.start_time.strftime("%m/%d/%Y, %H:%M")
+
+      new_data.append(new_dict)
+      new_dict = {}
   # displays list of shows at /shows
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
@@ -583,6 +614,7 @@ def shows():
     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
     "start_time": "2035-04-15T20:00:00.000Z"
   }]
+  data = new_data
   return render_template('pages/shows.html', shows=data)
 
 @app.route('/shows/create')
