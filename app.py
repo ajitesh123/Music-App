@@ -78,6 +78,21 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String)
 
+    def format(self):
+        return ({
+            'id': self.id,
+            'name': self.name,
+            'city': self.city,
+            'state': self.state,
+            'phone': self.phone,
+            'genres': self.genres,
+            'image_link': self.image_link,
+            'facebook_link': self.facebook_link,
+            'website_link': self.website_link,
+            'seeking_venue': self.seeking_venue,
+            'seeking_description': self.seeking_description
+        })
+
 class Show(db.Model):
     __tablename__='Show'
 
@@ -318,6 +333,16 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
+  result = Artist.query.all()
+  new_data = []
+  new_dict = {}
+
+  for item in result:
+      new_dict["id"] = item.id
+      new_dict["name"] = item.name
+      new_data.append(new_dict)
+      new_dict = {}
+
   data=[{
     "id": 4,
     "name": "Guns N Petals",
@@ -328,6 +353,7 @@ def artists():
     "id": 6,
     "name": "The Wild Sax Band",
   }]
+  data = new_data
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
