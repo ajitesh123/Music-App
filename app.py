@@ -45,6 +45,22 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean)
     seeking_description =db.Column(db.String)
 
+    def format(self):
+        return ({
+            'id': self.id,
+            'name': self.name,
+            'address': self.address,
+            'city': self.city,
+            'state': self.state,
+            'phone': self.phone,
+            'website': self.website,
+            'facebook_link': self.facebook_link,
+            'seeking_talent': self.seeking_talent,
+            'seeking_description': self.seeking_description,
+            'image_link': self.image_link
+        })
+
+
     # TODO: implement any missing fields, as a database migration using Flask-Migrate (Done)
 
 class Artist(db.Model):
@@ -105,6 +121,18 @@ def index():
 
 @app.route('/venues')
 def venues():
+  result = Venue.query.distinct(Venue.city, Venue.state).all()
+  new_list = []
+  new_dict = {}
+  for item in result:
+      new_dict["city"]=item.city
+      new_dict["state"]=item.state
+      new_list.append(new_dict)
+
+  for l in new_list:
+      l["venues"]=[
+      v.format() for v in Venue.query.filter_by(city=l["city"], state=l["state"]).all()
+      ]
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
   data=[{
@@ -128,6 +156,7 @@ def venues():
       "num_upcoming_shows": 0,
     }]
   }]
+  data = new_list
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
