@@ -232,43 +232,22 @@ def index():
 @app.route('/venues')
 def venues():
   result = Venue.query.distinct(Venue.city, Venue.state).all()
-  new_list = []
+  data = []
   new_dict = {}
   for item in result:
       new_dict["city"]=item.city
       new_dict["state"]=item.state
-      new_list.append(new_dict)
+      data.append(new_dict)
       new_dict = {}
 
-  for l in new_list:
+  for l in data:
       l["venues"]=[
-      v.format() for v in Venue.query.filter_by(city=l["city"], state=l["state"]).all()
+      v.exhaustive_format() for v in Venue.query.filter_by(city=l["city"], state=l["state"]).all()
       ]
       # TODO: num_upcoming_shows ->
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
-  data = new_list
+
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -282,27 +261,14 @@ def search_venues():
   for item in result:
       new_dict["id"] = item.id
       new_dict["name"] = item.name
+      new_dict["num_upcoming_shows"]=item.exhaustive_format()["upcoming_shows_count"]
       new_data.append(new_dict)
       new_dict = {}
 
-  new_response = {
+  response = {
     "count": len(result),
     "data": new_data
   }
-
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for Hop should return "The Musical Hop".
-  # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-  response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }
-
-  response = new_response
 
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
@@ -403,9 +369,10 @@ def search_artists():
       new_dict["id"] = item.id
       new_dict["name"] = item.name
       new_data.append(new_dict)
+      new_dict["num_upcoming_shows"]=item.exhaustive_format()["upcoming_shows_count"]
       new_dict = {}
 
-  new_response = {
+  response = {
     "count": len(result),
     "data": new_data
   }
@@ -413,15 +380,7 @@ def search_artists():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
-  response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
-  }
-  response = new_response
+
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/artists/<int:artist_id>')
@@ -552,6 +511,7 @@ def shows():
       new_dict["artist_name"] = Artist.get_by_id(item.artist_id).name
       new_dict["artist_image_link"] = Artist.get_by_id(item.artist_id).image_link
       new_dict["start_time"] = item.start_time.strftime("%m/%d/%Y, %H:%M")
+      new_dict["num_upcoming_shows"]=Venue.get_by_id(item.venue_id).exhaustive_format()["upcoming_shows_count"]
 
       data.append(new_dict)
       new_dict = {}
