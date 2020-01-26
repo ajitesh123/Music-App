@@ -36,6 +36,7 @@ class Venue(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
+    genres = db.Column(db.ARRAY(db.String))
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
@@ -50,6 +51,7 @@ class Venue(db.Model):
         return ({
             'id': self.id,
             'name': self.name,
+            'genres': self.genres,
             'address': self.address,
             'city': self.city,
             'state': self.state,
@@ -70,6 +72,7 @@ class Venue(db.Model):
         return {
             'id': self.id,
             'name': self.name,
+            'genres': self.genres,
             'address': self.address,
             'city': self.city,
             'state': self.state,
@@ -102,10 +105,10 @@ class Artist(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
+    genres = db.Column(db.ARRAY(db.String))
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    genres = db.Column(db.ARRAY(db.String))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website_link = db.Column(db.String(500))
@@ -297,6 +300,7 @@ def create_venue_submission():
   try:
       venue = Venue(
       name = form.name.data,
+      genres = form.genres.data,
       city = form.city.data,
       state = form.state.data,
       address = form.address.data,
@@ -413,7 +417,7 @@ def edit_artist_submission(artist_id):
         artist.state = form.state.data
         artist.phone = form.phone.data
         artist.facebook_link = form.facebook_link.data
-        # TODO: deal with genre
+        artist.genres = form.genres.data
         db.session.commit()
         flash('Artist ' + request.form['name'] + ' was successfully edited!')
     except:
@@ -444,7 +448,7 @@ def edit_venue_submission(venue_id):
         venue.state = form.state.data
         venue.phone = form.phone.data
         venue.facebook_link = form.facebook_link.data
-        # TODO: deal with genre
+        venue.genres = form.genres.data
         db.session.commit()
         flash('Venue ' + request.form['name'] + ' was successfully edited!')
     except:
@@ -478,6 +482,7 @@ def create_artist_submission():
       state = form.state.data,
       phone = form.phone.data,
       facebook_link = form.facebook_link.data,
+      genres = form.genres.data
       )
       db.session.add(artist)
       db.session.commit()

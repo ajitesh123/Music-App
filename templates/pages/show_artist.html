@@ -9,7 +9,11 @@
 		<p class="subtitle">
 			ID: {{ artist.id }}
 		</p>
-		<!-- TODO: Div Element goes here -->
+		<div class="genres">
+		{% for genre in artist.genres %}
+		<span class="genre">{{ genre }}</span>
+		{% endfor %}
+	</div>
 		<p>
 			<i class="fas fa-globe-americas"></i> {{ artist.city }}, {{ artist.state }}
 		</p>
